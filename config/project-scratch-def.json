@@ -1,5 +1,5 @@
 {
-  "orgName": "CunningRaccoon CI",
+  "orgName": "salesforce-dev",
   "edition": "Developer",
   "features": ["EnableSetPasswordInApi"],
   "settings": {
