@@ -1,0 +1,15 @@
+# Default owner for all files
+* @Seth-Musich
+
+# Apex classes require review
+force-app/main/default/classes/ @Seth-Musich
+
+# LWC components
+force-app/main/default/lwc/ @Seth-Musich
+
+# Permissions are sensitive — always require review
+force-app/main/default/permissionsets/ @Seth-Musich
+force-app/main/default/profiles/ @Seth-Musich
+
+# CI/CD pipeline changes
+.github/ @Seth-Musich

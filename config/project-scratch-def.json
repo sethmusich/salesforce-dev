@@ -1,5 +1,5 @@
 {
-  "orgName": "seth company",
+  "orgName": "CunningRaccoon CI",
   "edition": "Developer",
   "features": ["EnableSetPasswordInApi"],
   "settings": {
@@ -9,5 +9,6 @@
     "mobileSettings": {
       "enableS1EncryptedStoragePref2": false
     }
-  }
+  },
+  "adminEmail": "test@example.com"
 }

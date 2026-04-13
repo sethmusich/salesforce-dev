@@ -1,0 +1,86 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
+jobs:
+  deploy-staging:
+    name: Deploy & Test — Staging Scratch Org
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ steps.org-url.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli@latest
+
+      - name: Authenticate Dev Hub
+        run: |
+          echo "${{ secrets.SF_DEV_HUB_URL }}" > ./devhub.url
+          sf org login sfdx-url \
+            --sfdx-url-file ./devhub.url \
+            --alias devhub \
+            --set-default-dev-hub
+          rm ./devhub.url
+
+      - name: Delete previous staging org (if exists)
+        continue-on-error: true
+        run: sf org delete scratch --target-org staging --no-prompt
+
+      - name: Create staging scratch org
+        run: |
+          sf org create scratch \
+            --definition-file config/project-scratch-def.json \
+            --alias staging \
+            --duration-days 7 \
+            --set-default \
+            --wait 10
+
+      - name: Get staging org URL
+        id: org-url
+        run: |
+          URL=$(sf org display --target-org staging --json | jq -r '.result.instanceUrl')
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      - name: Deploy source
+        run: |
+          sf project deploy start \
+            --source-dir force-app \
+            --target-org staging \
+            --wait 20
+
+      - name: Run Apex tests
+        run: |
+          sf apex run test \
+            --target-org staging \
+            --test-level RunLocalTests \
+            --output-dir ./test-results \
+            --result-format tap \
+            --wait 20
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: staging-apex-test-results-${{ github.sha }}
+          path: test-results/
+          retention-days: 14
+
+      - name: Post staging URL to summary
+        run: |
+          echo "## Staging Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Org URL:** ${{ steps.org-url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Scratch org will expire in 7 days." >> $GITHUB_STEP_SUMMARY
