@@ -1,0 +1,50 @@
+<template>
+    <lightning-card title="Weather" icon-name="utility:weather">
+        <div class="slds-card__body slds-card__body_inner">
+            <template if:true={loading}>
+                <div class="slds-align_absolute-center slds-p-around_medium">
+                    <lightning-spinner alternative-text="Loading weather..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+                    <span class="slds-assistive-text">error</span>
+                    <span>{errorMessage}</span>
+                </div>
+            </template>
+
+            <template if:true={weather}>
+                <div class="weather-container">
+                    <div class="weather-header">
+                        <img src={iconUrl} alt={description} class="weather-icon" />
+                        <div>
+                            <p class="weather-city">{cityDisplay}</p>
+                            <p class="weather-description">{description}</p>
+                        </div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-stat">
+                            <span class="weather-temp">{temperature}&deg;F</span>
+                            <span class="weather-label">Feels like {feelsLike}&deg;F</span>
+                        </div>
+                        <div class="weather-stat">
+                            <span class="weather-value">{humidity}%</span>
+                            <span class="weather-label">Humidity</span>
+                        </div>
+                        <div class="weather-stat">
+                            <span class="weather-value">{windSpeed} mph</span>
+                            <span class="weather-label">Wind</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={noCity}>
+                <p class="slds-text-color_weak slds-text-align_center slds-p-around_medium">
+                    No billing city set on this account.
+                </p>
+            </template>
+        </div>
+    </lightning-card>
+</template>
